@@ -1,1 +1,10 @@
 epoch : 0
+epoch : 1
+epoch : 2
+epoch : 3
+epoch : 4
+momentum test accuracy 0.1643
+momentum_modified test accuracy 0.1921
+nesterov test accuracy 0.1529
+nesterov_modified test accuracy 0.1368
+time : 62.0506s

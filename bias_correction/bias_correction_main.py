@@ -100,7 +100,7 @@ for i in range(4):
 session.run(tf.global_variables_initializer())
 
 # record the loss of different algorithms
-max_iteration = 50
+max_iteration = 11000
 loss0 = []
 loss1 = []
 loss2 = []
@@ -133,10 +133,10 @@ for i in range(max_iteration):
     session.run(train_step2, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
     session.run(train_step3, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
 
-print("momentum test accuracy %g" % (accuracy[0].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-print("momentum_modified test accuracy %g" % (accuracy[1].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-print("nesterov test accuracy %g" % (accuracy[2].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-print("nesterov_modified test accuracy %g" % (accuracy[3].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
+output.write("momentum test accuracy %g\n" % (accuracy[0].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
+output.write("momentum_modified test accuracy %g\n" % (accuracy[1].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
+output.write("nesterov test accuracy %g\n" % (accuracy[2].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
+output.write("nesterov_modified test accuracy %g\n" % (accuracy[3].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
 
 np.save('loss0.npy', loss0)
 np.save('loss1.npy', loss1)
@@ -144,6 +144,6 @@ np.save('loss2.npy', loss2)
 np.save('loss3.npy', loss3)
 
 end = time.time()
-print('time : ', end - start, 's')
+output.write('time : %gs' % (end - start))
 
 
