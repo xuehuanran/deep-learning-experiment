@@ -1,0 +1,4 @@
+momentum test accuracy 0.1492
+momentum_modified test accuracy 0.2541
+nesterov test accuracy 0.1088
+nesterov_modified test accuracy 0.1649

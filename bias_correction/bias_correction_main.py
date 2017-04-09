@@ -100,17 +100,33 @@ for i in range(4):
 session.run(tf.global_variables_initializer())
 
 # record the loss of different algorithms
-max_iteration = 11000
+max_iteration = 11
 loss0 = []
 loss1 = []
 loss2 = []
 loss3 = []
 
-output = open('training_data.txt', 'w')
+output = open('output/training_epochs.txt', 'w')
 
 for i in range(max_iteration):
-    output.write('epoch : %i\n' % i)
-    output.flush()
+    if i % 10 == 0:
+        output.write('epoch : %i\n' % i)
+
+        np.save('output/loss0.npy', loss0)
+        np.save('output/loss1.npy', loss1)
+        np.save('output/loss2.npy', loss2)
+        np.save('output/loss3.npy', loss3)
+
+        np.save('output/w_conv1.npy', session.run(w_conv1))
+        np.save('output/b_conv1.npy', session.run(b_conv1))
+        np.save('output/w_conv2.npy', session.run(w_conv2))
+        np.save('output/b_conv2.npy', session.run(b_conv2))
+        np.save('output/w_fc1.npy', session.run(w_fc1))
+        np.save('output/b_fc1.npy', session.run(b_fc1))
+        np.save('output/w_fc2.npy', session.run(w_fc2))
+        np.save('output/b_fc2.npy', session.run(b_fc2))
+
+        output.flush()
 
     parameter_list0 = [w_conv1[0], b_conv1[0], w_conv2[0], b_conv2[0], w_fc1[0], b_fc1[0], w_fc2[0], b_fc2[0]]
     parameter_list1 = [w_conv1[1], b_conv1[1], w_conv2[1], b_conv2[1], w_fc1[1], b_fc1[1], w_fc2[1], b_fc2[1]]
@@ -132,16 +148,6 @@ for i in range(max_iteration):
     session.run(train_step1, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
     session.run(train_step2, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
     session.run(train_step3, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-
-output.write("momentum test accuracy %g\n" % (accuracy[0].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-output.write("momentum_modified test accuracy %g\n" % (accuracy[1].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-output.write("nesterov test accuracy %g\n" % (accuracy[2].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-output.write("nesterov_modified test accuracy %g\n" % (accuracy[3].eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))
-
-np.save('loss0.npy', loss0)
-np.save('loss1.npy', loss1)
-np.save('loss2.npy', loss2)
-np.save('loss3.npy', loss3)
 
 end = time.time()
 output.write('time : %gs' % (end - start))

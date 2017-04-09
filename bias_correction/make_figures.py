@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-loss0 = np.load('loss0.npy')
-loss1 = np.load('loss1.npy')
-loss2 = np.load('loss2.npy')
-loss3 = np.load('loss3.npy')
+loss0 = np.load('output/loss0.npy')
+loss1 = np.load('output/loss1.npy')
+loss2 = np.load('output/loss2.npy')
+loss3 = np.load('output/loss3.npy')
 
 plt.figure(1)
 curve0, = plt.semilogy(loss0, 'r')
