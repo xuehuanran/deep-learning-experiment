@@ -106,7 +106,7 @@ train_step1 = training_algorithms.momentum_modified(cross_entropy[1], 0.9)
 session.run(tf.global_variables_initializer())
 
 # record the loss of different algorithms
-max_iteration = 1100 * 200
+max_iteration = 1100
 loss0 = []
 loss1 = []
 
@@ -114,9 +114,9 @@ for i in range(max_iteration):
     print('epoch : %i' % i)
     batch = mnist.train.next_batch(50)
 
-    if (i + 1) % 1100 == 0:
-        loss0.append(cross_entropy[0].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
-        loss1.append(cross_entropy[1].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
+    
+    loss0.append(cross_entropy[0].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
+    loss1.append(cross_entropy[1].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
 
     session.run(train_step0, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
     session.run(train_step1, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
