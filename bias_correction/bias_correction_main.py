@@ -106,24 +106,12 @@ train_step1 = training_algorithms.momentum_modified(cross_entropy[1], 0.9)
 session.run(tf.global_variables_initializer())
 
 # record the loss of different algorithms
-max_iteration = 1101
+max_iteration = 55000
 loss0 = []
 loss1 = []
 
 for i in range(max_iteration):
 	print('epoch : %i' % i)
-	if i % 10 == 0:
-		np.save('output/loss0.npy', loss0)
-		np.save('output/loss1.npy', loss1)
-
-		np.save('output/w_conv1.npy', session.run(w_conv1))
-		np.save('output/b_conv1.npy', session.run(b_conv1))
-		np.save('output/w_conv2.npy', session.run(w_conv2))
-		np.save('output/b_conv2.npy', session.run(b_conv2))
-		np.save('output/w_fc1.npy', session.run(w_fc1))
-		np.save('output/b_fc1.npy', session.run(b_fc1))
-		np.save('output/w_fc2.npy', session.run(w_fc2))
-		np.save('output/b_fc2.npy', session.run(b_fc2))
 
 	batch = mnist.train.next_batch(50)
 	loss0.append(cross_entropy[0].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
@@ -131,6 +119,19 @@ for i in range(max_iteration):
 
 	session.run(train_step0, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
 	session.run(train_step1, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+
+np.save('output/loss0.npy', loss0)
+np.save('output/loss1.npy', loss1)
+
+np.save('output/w_conv1.npy', session.run(w_conv1))
+np.save('output/b_conv1.npy', session.run(b_conv1))
+np.save('output/w_conv2.npy', session.run(w_conv2))
+np.save('output/b_conv2.npy', session.run(b_conv2))
+np.save('output/w_fc1.npy', session.run(w_fc1))
+np.save('output/b_fc1.npy', session.run(b_fc1))
+np.save('output/w_fc2.npy', session.run(w_fc2))
+np.save('output/b_fc2.npy', session.run(b_fc2))
+
 
 end = time.time()
 print('time : %gs' % (end - start))
