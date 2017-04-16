@@ -106,7 +106,7 @@ train_step1 = training_algorithms.momentum_modified(cross_entropy[1], 0.9)
 session.run(tf.global_variables_initializer())
 
 # record the loss of different algorithms
-max_iteration = 1100
+max_iteration = 1100 * 200
 loss0 = []
 loss1 = []
 
