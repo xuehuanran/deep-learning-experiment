@@ -1,18 +1,17 @@
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist.input_data import read_data_sets
+import cifar10_input
 import training_algorithms
-import time
 import numpy as np
 
 
-def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=0.1)
-    return tf.Variable(initial)
+def weight_variable(shape, stdeev, name):
+    initial = tf.truncated_normal(shape, stddev=stdeev)
+    return tf.Variable(initial, name=name)
 
 
-def bias_variable(shape):
+def bias_variable(shape, name):
     initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name=name)
 
 
 def conv2d(input_x, input_w):
@@ -23,114 +22,81 @@ def max_pool_2x2(input_x):
     return tf.nn.max_pool(input_x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
-start = time.time()
-
-algorithm_num = 2
-
-mnist = read_data_sets('../dataset/mnist', one_hot=True)
-
 session = tf.InteractiveSession()
 
-x = tf.placeholder(tf.float32, [None, 784])
+x_image = tf.placeholder(tf.float32, [None, 32, 32, 3])
 y_ = tf.placeholder(tf.float32, [None, 10])
 
-x_image = tf.reshape(x, [-1, 28, 28, 1])
-
 # the first convolution layer
-w_conv1 = []
-b_conv1 = []
-h_conv1 = []
-h_pool1 = []
-for _ in range(algorithm_num):
-    w_conv1.append(weight_variable([5, 5, 1, 32]))
-    b_conv1.append(bias_variable([32]))
+w_conv1 = weight_variable([5, 5, 3, 64], stdeev=5e-2, name='w_conv1')
+b_conv1 = bias_variable([64], name='b_conv1')
 
-for i in range(algorithm_num):
-    h_conv1.append(tf.nn.relu(conv2d(x_image, w_conv1[i]) + b_conv1[i]))
-    h_pool1.append(max_pool_2x2(h_conv1[i]))
+h_conv1 = tf.nn.relu(conv2d(x_image, w_conv1) + b_conv1)
+h_pool1 = max_pool_2x2(h_conv1)
 
 # the second convolution layer
-w_conv2 = []
-b_conv2 = []
-h_conv2 = []
-h_pool2 = []
-for i in range(algorithm_num):
-    w_conv2.append(weight_variable([5, 5, 32, 64]))
-    b_conv2.append(bias_variable([64]))
-for i in range(algorithm_num):
-    h_conv2.append(tf.nn.relu(conv2d(h_pool1[i], w_conv2[i]) + b_conv2[i]))
-    h_pool2.append(max_pool_2x2(h_conv2[i]))
+w_conv2 = weight_variable([5, 5, 64, 64], stdeev=5e-2, name='w_conv2')
+b_conv2 = bias_variable([64], name='b_conv2')
+
+h_conv2 = tf.nn.relu(conv2d(h_pool1, w_conv2) + b_conv2)
+h_pool2 = max_pool_2x2(h_conv2)
 
 # first fully-connected-layer
-w_fc1 = []
-b_fc1 = []
-h_pool2_flat = []
-h_fc1 = []
-for i in range(algorithm_num):
-    w_fc1.append(weight_variable([7 * 7 * 64, 1024]))
-    b_fc1.append(bias_variable([1024]))
-for i in range(algorithm_num):
-    h_pool2_flat.append(tf.reshape(h_pool2[i], [-1, 7 * 7 * 64]))
-    h_fc1.append(tf.nn.relu(tf.matmul(h_pool2_flat[i], w_fc1[i]) + b_fc1[i]))
+w_fc1 = weight_variable([8 * 8 * 64, 1024], stdeev=0.04, name='w_fc1')
+b_fc1 = bias_variable([1024], name='b_fc1')
+
+h_pool2_flat = tf.reshape(h_pool2, [-1, 8 * 8 * 64])
+h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, w_fc1) + b_fc1)
 
 # dropout
-h_fc1_drop = []
 keep_prob = tf.placeholder(tf.float32)
-for i in range(algorithm_num):
-    h_fc1_drop.append(tf.nn.dropout(h_fc1[i], keep_prob))
+h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
 # second fully-connected-layer(output)
-w_fc2 = []
-b_fc2 = []
-y_conv = []
-for i in range(algorithm_num):
-    w_fc2.append(weight_variable([1024, 10]))
-    b_fc2.append(bias_variable([10]))
-    y_conv.append(tf.matmul(h_fc1_drop[i], w_fc2[i]) + b_fc2[i])
+w_fc2 = weight_variable([1024, 10], stdeev=0.04, name='w_fc2')
+b_fc2 = bias_variable([10], name='b_fc2')
+y_conv = tf.matmul(h_fc1_drop, w_fc2) + b_fc2
 
 # Train and Evaluate the Model
-cross_entropy = []
-for i in range(algorithm_num):
-    cross_entropy.append(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv[i])))
-
-correct_prediction = []
-accuracy = []
-for i in range(algorithm_num):
-    correct_prediction.append(tf.equal(tf.argmax(y_conv[i], 1), tf.argmax(y_, 1)))
-    accuracy.append(tf.reduce_mean(tf.cast(correct_prediction[i], tf.float32)))
-
-train_step0 = training_algorithms.momentum(cross_entropy[0], 0.9)
-train_step1 = training_algorithms.momentum_modified(cross_entropy[1], 0.9)
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
+train_step = training_algorithms.momentum(cross_entropy, 0.9)
+correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 session.run(tf.global_variables_initializer())
+train_images = []
+train_labels = []
+index = 0
 
-# record the loss of different algorithms
-max_iteration = 1100 * 200
-loss0 = []
-loss1 = []
+batch_accuracy = []
+loss = []
+for i in range(20):
+    if i % 1000 == 0:
+        index = 0
+        train_images, train_labels = cifar10_input.load_cifar10(is_train=True)
 
-for i in range(max_iteration):
-    print('epoch : %i' % i)
-    batch = mnist.train.next_batch(50)
+    train_accuracy = accuracy.eval(feed_dict={x_image: train_images[index: (index + 50)],
+                                              y_: train_labels[index: (index + 50)],
+                                              keep_prob: 1.0})
+    print("step %d, training accuracy %g" % (i, train_accuracy))
 
-    loss0.append(cross_entropy[0].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
-    loss1.append(cross_entropy[1].eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0}))
+    batch_accuracy.append(train_accuracy)
+    loss.append(cross_entropy.eval(feed_dict={x_image: train_images[index: (index + 50)],
+                                              y_: train_labels[index: (index + 50)],
+                                              keep_prob: 1.0}))
 
-    session.run(train_step0, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    session.run(train_step1, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+    session.run(train_step, feed_dict={x_image: train_images[index: index + 50],
+                                       y_: train_labels[index: index + 50],
+                                       keep_prob: 0.5})
+    index = index + 50
 
-np.save('output/loss0.npy', loss0)
-np.save('output/loss1.npy', loss1)
+saver = tf.train.Saver()
+saver.save(session, 'output/momentum_params.ckpt')
 
-np.save('output/w_conv1.npy', session.run(w_conv1))
-np.save('output/b_conv1.npy', session.run(b_conv1))
-np.save('output/w_conv2.npy', session.run(w_conv2))
-np.save('output/b_conv2.npy', session.run(b_conv2))
-np.save('output/w_fc1.npy', session.run(w_fc1))
-np.save('output/b_fc1.npy', session.run(b_fc1))
-np.save('output/w_fc2.npy', session.run(w_fc2))
-np.save('output/b_fc2.npy', session.run(b_fc2))
+print(batch_accuracy.__class__)
 
-end = time.time()
-print('time : %gs' % (end - start))
+np.save('output/batch_accuracy.npy', batch_accuracy)
+np.save('output/loss.npy', loss)
 
+test_images, test_labels = cifar10_input.load_cifar10(is_train=False)
+print("test accuracy %g" % (accuracy.eval(feed_dict={x_image: test_images, y_: test_labels, keep_prob: 1.0})))

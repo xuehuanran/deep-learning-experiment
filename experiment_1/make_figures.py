@@ -7,12 +7,12 @@ loss1 = np.load('output/loss1.npy')
 data0 = []
 data1 = []
 
-for i in range(0, 1100, 11):
+for i in range(0, 1100 * 200, 1100):
     data0.append(loss0[i])
     data1.append(loss1[i])
 
 x = []
-for i in range(0, 1100, 11):
+for i in range(0, 1100 * 200, 1100):
     x.append(i / 1100)
 
 plt.figure(1)

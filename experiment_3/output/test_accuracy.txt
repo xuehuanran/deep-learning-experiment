@@ -1,0 +1,2 @@
+momentum test accuracy 0.9941
+momentum_modified test accuracy 0.9942

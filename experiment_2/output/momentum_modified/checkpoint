@@ -1,0 +1,2 @@
+model_checkpoint_path: "momentum_modified_params.ckpt"
+all_model_checkpoint_paths: "momentum_modified_params.ckpt"
